@@ -1,0 +1,77 @@
+{
+  "name": "Blockchain-project",
+  "version": "1.0.0",
+  "description": "Authentication with node, express, jwt and mongodb",
+  "main": "app.js",
+  "scripts": {
+    "start:client": "react-scripts start",
+    "build": "react-scripts build",
+    "start:server": "node -r dotenv/config server",
+    "dev": "node -r dotenv/config server",
+    "eject": "react-scripts eject",
+    "test": "react-scripts test"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@material-ui/core": "^4.6.0",
+    "@material-ui/icons": "^4.5.1",
+    "axios": "^0.19.0",
+    "bcryptjs": "^2.4.3",
+    "bip39": "^3.0.2",
+    "bluebird": "^3.7.1",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "crypto": "^1.0.1",
+    "express": "^4.16.3",
+    "fs-extra": "^8.1.0",
+    "guid": "0.0.12",
+    "helmet": "^3.12.0",
+    "human-standard-token-abi": "^2.0.0",
+    "jsonwebtoken": "^8.2.1",
+    "markdown-to-jsx": "^6.10.3",
+    "md5": "^2.2.1",
+    "moment": "^2.22.0",
+    "mongoose": "^5.0.14",
+    "mongoose-unique-validator": "^2.0.0",
+    "multer": "^1.4.2",
+    "nodemailer": "^4.6.4",
+    "object-hash": "^2.0.0",
+    "path": "^0.12.7",
+    "randomstring": "^1.1.5",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "3.2.0",
+    "underscore": "^1.9.1",
+    "url": "^0.11.0",
+    "validator": "^9.4.1"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "client/*",
+      "src/*",
+      "build/*",
+      "dist/*"
+    ],
+    "delay": "2500"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
