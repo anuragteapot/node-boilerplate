@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
-const bcrypt = require('bcryptjs');
-const validator = require('validator');
-const Guid = require('guid');
-const jwt = require('jsonwebtoken');
-const secret = process.env.JWT_SECRET || 'devmode';
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+const bcrypt = require("bcryptjs");
+const validator = require("validator");
+const Guid = require("guid");
+const jwt = require("jsonwebtoken");
+const secret = process.env.JWT_SECRET || "devmode";
 const { Schema } = mongoose;
 
 // filter returned values on requests
@@ -33,8 +33,13 @@ const UserSchema = new Schema({
     minlength: 5,
     validate: {
       validator: value => validator.isEmail(value),
-      message: '{VALUE} is not a valid email'
+      message: "{VALUE} is not a valid email"
     }
+  },
+  emailVerified: {
+    type: Boolean,
+    required: true,
+    default: false
   },
   password: {
     type: String,
@@ -65,11 +70,11 @@ const UserSchema = new Schema({
 
 UserSchema.plugin(uniqueValidator);
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre("save", function(next) {
   const user = this;
   user.updated_at = new Date().getTime();
 
-  if (user.isModified('password')) {
+  if (user.isModified("password")) {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(user.password, salt);
     user.password = hash;
@@ -79,7 +84,7 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-UserSchema.pre('update', function(next) {
+UserSchema.pre("update", function(next) {
   const user = this;
   this.updated_at = new Date().getTime();
   next();
@@ -99,14 +104,14 @@ UserSchema.statics.findByCredentials = async function(email, password) {
     try {
       user.findOne({ email }, (err, doc) => {
         if (err || !doc) {
-          return reject({ status: 404, message: 'Invalid credentials' });
+          return reject({ status: 404, message: "Invalid credentials" });
         }
         bcrypt.compare(password, doc.password, (err, didMatch) => {
           if (err) return reject(err);
           if (didMatch) {
             resolve(doc);
           } else {
-            reject({ message: 'Not authorized' });
+            reject({ message: "Not authorized" });
           }
         });
       });
@@ -129,4 +134,4 @@ UserSchema.statics.findByToken = function(token) {
   });
 };
 
-mongoose.model('User', UserSchema);
+mongoose.model("User", UserSchema);
