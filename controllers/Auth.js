@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const moment = require("moment");
 const UserModel = mongoose.model("User");
+const AccessTokenModel = mongoose.model("AccessToken");
 const httpStatus = require("../helpers/httpStatus");
 const logs = require("../helpers/logs");
 const jwt = require("jsonwebtoken");
@@ -17,7 +18,6 @@ class Auth {
         req.body.password
       );
       if (user && user._id && user.emailVerified === true) {
-        logs(`Logged user [${user.email}]`);
         let token = jwt.sign(
           {
             _id: user._id,
@@ -27,7 +27,40 @@ class Auth {
           },
           secret
         );
-        res.json({ token });
+
+        try {
+          AccessTokenModel.create(
+            {
+              userId: user._id,
+              token: token,
+              location: "Update this",
+              ip: req.connection.remoteAddress || req.headers["x-forwarded-for"]
+            },
+            (err, created) => {
+              if (err) {
+                logs(
+                  `Error on user login [${user.email}]. Error: ..:: ${err.message} ::..`,
+                  "error"
+                );
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                  status: httpStatus.INTERNAL_SERVER_ERROR,
+                  error: err.message
+                });
+              }
+              logs(`Logged user [${user.email}]`);
+              res.status(httpStatus.OK).json({ token });
+            }
+          );
+        } catch (e) {
+          logs(
+            `Error on user login [${user.email}]. Error: ..:: ${e.message} ::..`,
+            "error"
+          );
+          res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            error: e.message
+          });
+        }
       } else {
         logs(`Error on login [ Email not verified ${user.email} ]`);
         res.status(httpStatus.UNAUTHORIZED).json({
@@ -40,6 +73,61 @@ class Auth {
       res.status(httpStatus.UNAUTHORIZED).json({
         message: e.message,
         status: httpStatus.UNAUTHORIZED
+      });
+    }
+  }
+
+  async logout(req, res) {
+    if (!req.body) {
+      return res.status(httpStatus.NO_CONTENT).send();
+    }
+
+    if (!req.headers.authorization) {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: "Not authorized"
+      });
+    }
+    let token = req.headers.authorization;
+
+    try {
+      let user = await UserModel.findByToken(token);
+
+      if (user) {
+        const AccessTokenUser = await AccessTokenModel.updateOne(
+          {
+            userId: user._id,
+            token: token,
+            status: true
+          },
+          {
+            status: false,
+            token: "null"
+          }
+        );
+
+        if (AccessTokenUser.nModified) {
+          return res.status(httpStatus.OK).json({
+            status: httpStatus.OK,
+            message: "Logged out successfully"
+          });
+        } else {
+          return res.status(httpStatus.OK).json({
+            status: httpStatus.OK,
+            message: "Your session is already logged out"
+          });
+        }
+      } else {
+        return res.status(httpStatus.UNAUTHORIZED).json({
+          status: httpStatus.UNAUTHORIZED,
+          message: "Not authorized"
+        });
+      }
+    } catch (e) {
+      logs(`Error [${e}]`);
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: "Not authorized"
       });
     }
   }

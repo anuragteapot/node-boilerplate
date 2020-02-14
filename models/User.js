@@ -39,7 +39,7 @@ const UserSchema = new Schema({
   emailVerified: {
     type: Boolean,
     required: true,
-    default: false
+    default: true
   },
   password: {
     type: String,

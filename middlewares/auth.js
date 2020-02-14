@@ -1,34 +1,49 @@
-const mongoose = require('mongoose')
-const UserModel = mongoose.model('User')
-const httpStatus = require('../helpers/httpStatus')
-const logs = require('../helpers/logs')
+const mongoose = require("mongoose");
+const UserModel = mongoose.model("User");
+const AccessTokenModel = mongoose.model("AccessToken");
+const httpStatus = require("../helpers/httpStatus");
+const logs = require("../helpers/logs");
 
 const auth = async (req, res, next) => {
   if (!req.headers.authorization) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       status: httpStatus.UNAUTHORIZED,
-      message: 'Not authorized'
-    })
+      message: "Not authorized"
+    });
   }
-  let token = req.headers.authorization
+  let token = req.headers.authorization;
   try {
-    let user = await UserModel.findByToken(token)
+    let user = await UserModel.findByToken(token);
+
     if (user) {
-      req.user = user.toJSON()
-      next()
+      const AccessTokenUser = await AccessTokenModel.findOne({
+        userId: user._id,
+        token: token,
+        status: true
+      });
+
+      if (AccessTokenUser && AccessTokenUser._id) {
+        req.user = user.toJSON();
+        next();
+      } else {
+        return res.status(httpStatus.UNAUTHORIZED).json({
+          status: httpStatus.UNAUTHORIZED,
+          message: "Not authorized"
+        });
+      }
     } else {
-      return res.status(httpStatus.NO_CONTENT).json({
-        status: httpStatus.NO_CONTENT,
-        message: 'Not found'
-      })
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: "Not authorized"
+      });
     }
   } catch (e) {
-    logs(`Error [${e}]`)
-    return res.status(httpStatus.NO_CONTENT).json({
-      status: httpStatus.NO_CONTENT,
-      message: e
-    })
+    logs(`Error [${e}]`);
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      status: httpStatus.UNAUTHORIZED,
+      message: "Not authorized"
+    });
   }
-}
+};
 
-module.exports = auth
+module.exports = auth;

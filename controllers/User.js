@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const UserModel = mongoose.model('User');
-const logs = require('../helpers/logs');
-const httpStatus = require('../helpers/httpStatus');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const UserModel = mongoose.model("User");
+const logs = require("../helpers/logs");
+const httpStatus = require("../helpers/httpStatus");
+const bcrypt = require("bcryptjs");
 class User {
   getByToken(req, res) {
     const user = { ...req.user };
@@ -13,13 +13,13 @@ class User {
       return res.status(httpStatus.NO_CONTENT).send();
     }
     const user = { ...req.body };
-    
+
     try {
       UserModel.create(user, (err, created) => {
         if (err) {
           logs(
             `Error on create user [${user.email}]. Error: ..:: ${err.message} ::..`,
-            'error'
+            "error"
           );
           return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             status: httpStatus.INTERNAL_SERVER_ERROR,
@@ -32,7 +32,7 @@ class User {
     } catch (e) {
       logs(
         `Error on create user [${user.email}]. Error: ..:: ${e.message} ::..`,
-        'error'
+        "error"
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
@@ -40,6 +40,14 @@ class User {
       });
     }
   }
+
+  check(req, res) {
+    return res.status(httpStatus.OK).json({
+      status: httpStatus.OK,
+      message: "Hello"
+    });
+  }
+
   async update(req, res) {
     const userData = { ...req.user };
     const newData = { ...req.body };
@@ -61,7 +69,7 @@ class User {
         if (err) {
           logs(
             `Error on findAndupdate user [${userData.email}]. Error: ..:: ${err} ::..`,
-            'error'
+            "error"
           );
           return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             status: httpStatus.INTERNAL_SERVER_ERROR,
@@ -75,7 +83,7 @@ class User {
     } catch (e) {
       logs(
         `Error on update user [${userData.email}]. Error: ..:: ${e.message} ::..`,
-        'error'
+        "error"
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
