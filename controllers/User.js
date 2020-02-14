@@ -1,8 +1,13 @@
 const mongoose = require("mongoose");
+const moment = require("moment");
 const UserModel = mongoose.model("User");
 const logs = require("../helpers/logs");
+const sendEmail = require("../mail/sendEmail");
 const httpStatus = require("../helpers/httpStatus");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const secret = process.env.JWT_SECRET || "devmode";
+
 class User {
   getByToken(req, res) {
     const user = { ...req.user };
@@ -15,7 +20,7 @@ class User {
     const user = { ...req.body };
 
     try {
-      UserModel.create(user, (err, created) => {
+      UserModel.create(user, async (err, created) => {
         if (err) {
           logs(
             `Error on create user [${user.email}]. Error: ..:: ${err.message} ::..`,
@@ -27,7 +32,39 @@ class User {
           });
         }
         logs(`Created user [${created._id}]`);
-        res.status(httpStatus.CREATED).json(created);
+
+        let token = jwt.sign(
+          {
+            _id: created._id,
+            expires: moment()
+              .add(1, "days")
+              .valueOf()
+          },
+          secret
+        );
+
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: "Please Verify Email",
+            template: `<h1>${token}</h1>`
+          });
+
+          res.status(httpStatus.CREATED).json({
+            status: httpStatus.CREATED,
+            message:
+              "Your account has been successfully created. Please verify your email."
+          });
+        } catch (err) {
+          logs(
+            `Error on create user [${user.email}]. Error: ..:: ${err} ::..`,
+            "error"
+          );
+          res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            error: "Please try again."
+          });
+        }
       });
     } catch (e) {
       logs(

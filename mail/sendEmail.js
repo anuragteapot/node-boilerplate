@@ -1,21 +1,24 @@
-const smtp = require('./config')
-const logs = require('../helpers/logs')
+const smtp = require("./config");
+const logs = require("../helpers/logs");
 
-const sendEmail = (template) => {
+const sendEmail = ({ to, from, template, subject }) => {
   return new Promise((resolve, reject) => {
     const options = {
-      subject: 'Email subject',
-      html: template || 'Test Email'
-    }
-    smtp.sendMail(mailOpts(options), (err, response) => {
-      if(err) {
-        logs(`Error on send message: ${err}`)
-        reject()
+      from: from || '"Fred Foo 👻" <foo@example.com>',
+      to: to || "bar@example.com, baz@example.com",
+      subject: subject || "Hello ✔",
+      html: template || "<b>Hello world?</b>"
+    };
+
+    smtp.sendMail(options, (err, response) => {
+      if (err) {
+        logs(`Error on send message: ${err}`);
+        reject(err);
       } else {
-        logs(`Message sent ${response}`)
-        resolve()
+        logs(`Message sent.`);
+        resolve(response);
       }
-    })
-  })
-}
-module.exports = sendEmail
+    });
+  });
+};
+module.exports = sendEmail;

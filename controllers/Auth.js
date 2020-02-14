@@ -77,6 +77,55 @@ class Auth {
     }
   }
 
+  async verifyEmail(req, res) {
+    if (!req.body) {
+      return res.status(httpStatus.NO_CONTENT).send();
+    }
+    const token = req.body.token;
+
+    try {
+      let user = await UserModel.findByToken(token);
+
+      if (user) {
+        if (user.emailVerified) {
+          return res.status(httpStatus.OK).json({
+            status: httpStatus.OK,
+            message: "Your account already verified"
+          });
+        }
+
+        try {
+          await UserModel.updateOne(
+            { _id: user._id },
+            {
+              emailVerified: true
+            }
+          );
+          return res.status(httpStatus.OK).json({
+            status: httpStatus.OK,
+            message: "Your account verified"
+          });
+        } catch (e) {
+          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            message: "INTERNAL_SERVER_ERROR"
+          });
+        }
+      } else {
+        return res.status(httpStatus.UNAUTHORIZED).json({
+          status: httpStatus.UNAUTHORIZED,
+          message: "Not authorized"
+        });
+      }
+    } catch (e) {
+      logs(`Error [${e}]`);
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: "Not authorized"
+      });
+    }
+  }
+
   async logout(req, res) {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
