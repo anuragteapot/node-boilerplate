@@ -9,7 +9,7 @@ const { join } = require("path");
 const PORT = process.env.PORT || 3344;
 const connectionURI = require("../db/connectionURI");
 const logs = require("../helpers/logs");
-const models = join(__dirname, "models");
+const models = join(__dirname, "../models");
 const app = express();
 
 fs.readdirSync(models)
@@ -19,7 +19,6 @@ fs.readdirSync(models)
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
-app.use("/uploads", express.static(join(__dirname, "uploads")));
 
 const routes = require("../routes");
 Object.keys(routes).forEach(routeName => {
@@ -37,11 +36,18 @@ const listen = () => {
     logs(`App listen on port ${PORT}`);
   });
 };
+
 const connect = () => {
-  const options = { keepAlive: 1 };
+  const options = {
+    keepAlive: 3000,
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  };
   mongoose.connect(connectionURI, options);
   return mongoose.connection;
 };
+
 connect()
   .on("error", logs)
   .on("disconnected", connect)
