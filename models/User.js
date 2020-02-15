@@ -52,11 +52,10 @@ const UserSchema = new Schema({
     max: 100,
     required: true
   },
-  type: {
-    type: Number,
-    min: 1,
-    max: 50,
-    required: true
+  acl: {
+    type: Array,
+    required: true,
+    default: ["$user"]
   },
   updated_at: {
     type: Date,
