@@ -24,7 +24,7 @@ app.use(bodyParser.json());
 staticPath.forEach(path => {
   let url = path.url || path.dir;
   if (url && path.dir) {
-    logs(`Loaded static folder: ${path.dir}`);
+    logs(`Loaded static folder: ${join(__dirname, path.dir)}`);
     app.use(url, express.static(join(__dirname, path.dir)));
   }
 });
