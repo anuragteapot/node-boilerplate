@@ -1,11 +1,9 @@
 {
-  "name": "Blockchain-project",
+  "name": "Node",
   "version": "1.0.0",
   "description": "Authentication with node, express, jwt and mongodb",
   "main": "app.js",
   "scripts": {
-    "start:client": "react-scripts start",
-    "build": "react-scripts build",
     "start:server": "node -r dotenv/config server",
     "dev": "node -r dotenv/config server",
     "eject": "react-scripts eject",
