@@ -8,6 +8,7 @@ const { join } = require("path");
 
 const PORT = process.env.PORT || 3344;
 const connectionURI = require("../db/connectionURI");
+const staticPath = require("../config/env")[process.env.NODE_ENV].static;
 const logs = require("../helpers/logs");
 const models = join(__dirname, "../models");
 const app = express();
@@ -19,6 +20,14 @@ fs.readdirSync(models)
 app.use(cors());
 app.use(helmet());
 app.use(bodyParser.json());
+
+staticPath.forEach(path => {
+  let url = path.url || path.dir;
+  if (url && path.dir) {
+    logs(`Loaded static folder: ${path.dir}`);
+    app.use(url, express.static(join(__dirname, path.dir)));
+  }
+});
 
 const routes = require("../routes");
 Object.keys(routes).forEach(routeName => {
