@@ -22,7 +22,7 @@ module.exports = {
     },
     static: [
       {
-        dir: "uploads",
+        dir: "/uploads",
         url: "/uploads"
       }
     ]
@@ -38,7 +38,7 @@ module.exports = {
     },
     static: [
       {
-        dir: "uploads",
+        dir: "/uploads",
         url: "/uploads"
       }
     ]
@@ -54,7 +54,7 @@ module.exports = {
     },
     static: [
       {
-        dir: "uploads",
+        dir: "/uploads",
         url: "/uploads"
       }
     ]

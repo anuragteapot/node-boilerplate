@@ -48,7 +48,6 @@ const listen = () => {
 
 const connect = () => {
   const options = {
-    keepAlive: 3000,
     useCreateIndex: true,
     useNewUrlParser: true,
     useUnifiedTopology: true
