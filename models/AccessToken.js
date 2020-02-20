@@ -35,4 +35,17 @@ const AccessTokenSchema = new Schema({
   }
 });
 
+const returnFilter = obj => {
+  let tmp = { ...obj };
+  tmp.password = undefined;
+  tmp.__v = undefined;
+  return tmp;
+};
+
+AccessTokenSchema.methods.toJSON = function() {
+  const accessToken = this;
+  const accessTokenObject = accessToken.toObject();
+  return returnFilter(accessTokenObject);
+};
+
 mongoose.model('AccessToken', AccessTokenSchema);

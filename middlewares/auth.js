@@ -1,14 +1,14 @@
-const mongoose = require("mongoose");
-const UserModel = mongoose.model("User");
-const AccessTokenModel = mongoose.model("AccessToken");
-const httpStatus = require("../helpers/httpStatus");
-const logs = require("../helpers/logs");
+const mongoose = require('mongoose');
+const UserModel = mongoose.model('User');
+const AccessTokenModel = mongoose.model('AccessToken');
+const httpStatus = require('../helpers/httpStatus');
+const logs = require('../helpers/logs');
 
 const auth = async (req, res, next) => {
   if (!req.headers.authorization) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       status: httpStatus.UNAUTHORIZED,
-      message: "Not authorized"
+      message: 'Not authorized'
     });
   }
   let token = req.headers.authorization;
@@ -24,24 +24,25 @@ const auth = async (req, res, next) => {
 
       if (AccessTokenUser && AccessTokenUser._id) {
         req.user = user.toJSON();
+        req.AccessToken = AccessTokenUser.toJSON();
         next();
       } else {
         return res.status(httpStatus.UNAUTHORIZED).json({
           status: httpStatus.UNAUTHORIZED,
-          message: "Not authorized"
+          message: 'Not authorized'
         });
       }
     } else {
       return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
-        message: "Not authorized"
+        message: 'Not authorized'
       });
     }
   } catch (e) {
     logs(`Error [${e}]`);
     return res.status(httpStatus.UNAUTHORIZED).json({
       status: httpStatus.UNAUTHORIZED,
-      message: "Not authorized"
+      message: 'Not authorized'
     });
   }
 };
