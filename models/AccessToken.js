@@ -37,8 +37,6 @@ const AccessTokenSchema = new Schema({
 
 const returnFilter = obj => {
   let tmp = { ...obj };
-  tmp.password = undefined;
-  tmp.__v = undefined;
   return tmp;
 };
 
