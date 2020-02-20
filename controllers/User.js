@@ -13,6 +13,7 @@ class User {
     const user = { ...req.user };
     res.json(user);
   }
+  
   create(req, res) {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();

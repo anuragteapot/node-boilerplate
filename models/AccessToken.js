@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const Guid = require("guid");
+const mongoose = require('mongoose');
+const Guid = require('guid');
 const { Schema } = mongoose;
 
 const AccessTokenSchema = new Schema({
@@ -20,6 +20,11 @@ const AccessTokenSchema = new Schema({
     required: true,
     default: true
   },
+  type: {
+    type: String,
+    required: true,
+    default: 'auth'
+  },
   location: {
     type: String,
     required: true
@@ -30,4 +35,4 @@ const AccessTokenSchema = new Schema({
   }
 });
 
-mongoose.model("AccessToken", AccessTokenSchema);
+mongoose.model('AccessToken', AccessTokenSchema);
