@@ -19,7 +19,7 @@ const auth = async (req, res, next) => {
       const AccessTokenUser = await AccessTokenModel.findOne({
         userId: user._id,
         token: token,
-        type: 'reset',
+        $or: [{ type: 'reset' }, { type: 'auth' }],
         status: true
       });
 

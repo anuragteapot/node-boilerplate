@@ -1,76 +1,75 @@
-const mongoose = require("mongoose");
-const moment = require("moment");
-const UserModel = mongoose.model("User");
-const logs = require("../helpers/logs");
-const sendEmail = require("../mail/sendEmail");
-const httpStatus = require("../helpers/httpStatus");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const secret = process.env.JWT_SECRET || "devmode";
+const mongoose = require('mongoose');
+const moment = require('moment');
+const UserModel = mongoose.model('User');
+const AccessTokenModel = mongoose.model('AccessToken');
+const logs = require('../helpers/logs');
+const sendEmail = require('../mail/sendEmail');
+const httpStatus = require('../helpers/httpStatus');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET || 'devmode';
 
 class User {
   getByToken(req, res) {
     const user = { ...req.user };
     res.json(user);
   }
-  
-  create(req, res) {
+
+  async create(req, res) {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
     }
     const user = { ...req.body };
 
     try {
-      UserModel.create(user, async (err, created) => {
-        if (err) {
-          logs(
-            `Error on create user [${user.email}]. Error: ..:: ${err.message} ::..`,
-            "error"
-          );
-          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: httpStatus.INTERNAL_SERVER_ERROR,
-            error: err.message
-          });
-        }
-        logs(`Created user [${created._id}]`);
+      const created = await UserModel.create(user);
+      
+      logs(`Created user [${created._id}]`);
 
-        let token = jwt.sign(
-          {
-            _id: created._id,
-            expires: moment()
-              .add(1, "days")
-              .valueOf()
-          },
-          secret
-        );
+      let token = jwt.sign(
+        {
+          _id: created._id,
+          expires: moment()
+            .add(1, 'days')
+            .valueOf()
+        },
+        secret
+      );
 
-        try {
-          await sendEmail({
-            to: user.email,
-            subject: "Please Verify Email",
-            template: `<h1>${token}</h1>`
-          });
-
-          res.status(httpStatus.CREATED).json({
-            status: httpStatus.CREATED,
-            message:
-              "Your account has been successfully created. Please verify your email."
-          });
-        } catch (err) {
-          logs(
-            `Error on create user [${user.email}]. Error: ..:: ${err} ::..`,
-            "error"
-          );
-          res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: httpStatus.INTERNAL_SERVER_ERROR,
-            error: "Please try again."
-          });
-        }
+      await AccessTokenModel.create({
+        userId: created._id,
+        token: token,
+        type: 'new_user',
+        location: 'Update this',
+        ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
       });
+
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: 'Please Verify Email',
+          template: `<h1>${token}</h1>`
+        });
+
+        res.status(httpStatus.CREATED).json({
+          status: httpStatus.CREATED,
+          message:
+            'Your account has been successfully created. Please verify your email.'
+        });
+      } catch (err) {
+        logs(
+          `Error on create user [${user.email}]. Error: ..:: ${err} ::..`,
+          'error'
+        );
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+          status: httpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Please try again.'
+        });
+      }
     } catch (e) {
       logs(
         `Error on create user [${user.email}]. Error: ..:: ${e.message} ::..`,
-        "error"
+        'error'
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
@@ -79,16 +78,10 @@ class User {
     }
   }
 
-  check(req, res) {
-    return res.status(httpStatus.OK).json({
-      status: httpStatus.OK,
-      message: "Hello"
-    });
-  }
-
   async update(req, res) {
     const userData = { ...req.user };
     const newData = { ...req.body };
+    const accessTokenData = { ...req.accessToken };
     try {
       const updateObj = {
         name: newData.name || userData.name,
@@ -100,20 +93,36 @@ class User {
         updateObj.password = hash;
       }
       updateObj.updated_at = new Date().getTime();
-      UserModel.findByIdAndUpdate(userData._id, updateObj, function(
+      UserModel.findByIdAndUpdate(userData._id, updateObj, async function(
         err,
         updated
       ) {
         if (err) {
           logs(
             `Error on findAndupdate user [${userData.email}]. Error: ..:: ${err} ::..`,
-            "error"
+            'error'
           );
           return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             status: httpStatus.INTERNAL_SERVER_ERROR,
             error: err
           });
         }
+
+        if (accessTokenData.type === 'reset') {
+          await AccessTokenModel.updateOne(
+            {
+              userId: updated._id,
+              token: accessTokenData.token,
+              status: true,
+              type: 'reset'
+            },
+            {
+              status: false,
+              token: 'null'
+            }
+          );
+        }
+
         UserModel.findById(updated._id, (err, user) => {
           return res.json(user);
         });
@@ -121,7 +130,7 @@ class User {
     } catch (e) {
       logs(
         `Error on update user [${userData.email}]. Error: ..:: ${e.message} ::..`,
-        "error"
+        'error'
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,

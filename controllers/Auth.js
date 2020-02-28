@@ -34,6 +34,7 @@ class Auth {
             {
               userId: user._id,
               token: token,
+              type: 'auth',
               location: 'Update this',
               ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
             },
@@ -87,7 +88,14 @@ class Auth {
     try {
       let user = await UserModel.findByToken(token);
 
-      if (user) {
+      const AccessTokenUser = await AccessTokenModel.findOne({
+        userId: user._id,
+        token: token,
+        type: 'new_user',
+        status: true
+      });
+
+      if (user && AccessTokenUser) {
         if (user.emailVerified) {
           return res.status(httpStatus.OK).json({
             status: httpStatus.OK,
@@ -102,6 +110,20 @@ class Auth {
               emailVerified: true
             }
           );
+
+          await AccessTokenModel.updateOne(
+            {
+              userId: user._id,
+              token: token,
+              status: true,
+              type: 'new_user'
+            },
+            {
+              status: false,
+              token: 'null'
+            }
+          );
+
           return res.status(httpStatus.OK).json({
             status: httpStatus.OK,
             message: 'Your account verified'
@@ -131,7 +153,7 @@ class Auth {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
     }
-    const email = { ...req.body };
+    const { email } = { ...req.body };
 
     try {
       const user = await UserModel.findOne({ email });
@@ -151,7 +173,7 @@ class Auth {
         {
           _id: user._id,
           expires: moment()
-            .add(1, 'days')
+            .add(30, 'days')
             .valueOf()
         },
         secret
@@ -177,12 +199,12 @@ class Auth {
       });
     } catch (e) {
       logs(
-        `Error on create user [${email}]. Error: ..:: ${e.message} ::..`,
+        `Error on find user [${email}]. Error: ..:: ${e.message} ::..`,
         'error'
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
-        error: e.message
+        error: 'Please try again later.'
       });
     }
   }
