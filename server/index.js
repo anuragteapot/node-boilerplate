@@ -50,7 +50,8 @@ const connect = () => {
   const options = {
     useCreateIndex: true,
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
   };
   mongoose.connect(connectionURI, options);
   return mongoose.connection;
