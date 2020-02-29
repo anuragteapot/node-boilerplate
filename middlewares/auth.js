@@ -24,7 +24,7 @@ const auth = async (req, res, next) => {
         status: true
       });
 
-      if (AccessTokenUser && AccessTokenUser._id) {
+      if (AccessTokenUser) {
         req.user = user.toJSON();
         req.accessToken = AccessTokenUser.toJSON();
         next();
