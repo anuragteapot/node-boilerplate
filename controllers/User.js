@@ -83,16 +83,19 @@ class User {
     const userData = { ...req.user };
     const newData = { ...req.body };
     const accessTokenData = { ...req.accessToken };
+
     try {
       const updateObj = {
         name: newData.name || userData.name,
         age: newData.age || userData.age
       };
+      
       if (newData.password) {
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(newData.password, salt);
         updateObj.password = hash;
       }
+
       updateObj.updated_at = new Date().getTime();
       UserModel.findByIdAndUpdate(userData._id, updateObj, async function(
         err,

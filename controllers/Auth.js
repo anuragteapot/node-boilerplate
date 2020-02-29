@@ -84,7 +84,7 @@ class Auth {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
     }
-    const token = req.body.token;
+    const { token } = { ...req.body };
 
     try {
       let user = await UserModel.findByToken(token);
