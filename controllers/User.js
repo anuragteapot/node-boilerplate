@@ -5,6 +5,7 @@ const AccessTokenModel = mongoose.model('AccessToken');
 const logs = require('../helpers/logs');
 const sendEmail = require('../mail/sendEmail');
 const httpStatus = require('../helpers/httpStatus');
+const accessTokenTypes = require('../helpers/accessTokenTypes');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const secret = process.env.JWT_SECRET || 'devmode';
@@ -23,7 +24,7 @@ class User {
 
     try {
       const created = await UserModel.create(user);
-      
+
       logs(`Created user [${created._id}]`);
 
       let token = jwt.sign(
@@ -39,7 +40,7 @@ class User {
       await AccessTokenModel.create({
         userId: created._id,
         token: token,
-        type: 'new_user',
+        type: accessTokenTypes.VERIFY_EMAIL,
         location: 'Update this',
         ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
       });
@@ -108,13 +109,13 @@ class User {
           });
         }
 
-        if (accessTokenData.type === 'reset') {
+        if (accessTokenData.type === accessTokenTypes.RESET) {
           await AccessTokenModel.updateOne(
             {
               userId: updated._id,
               token: accessTokenData.token,
               status: true,
-              type: 'reset'
+              type: accessTokenTypes.RESET
             },
             {
               status: false,

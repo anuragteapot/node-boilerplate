@@ -4,6 +4,7 @@ const UserModel = mongoose.model('User');
 const AccessTokenModel = mongoose.model('AccessToken');
 const sendEmail = require('../mail/sendEmail');
 const httpStatus = require('../helpers/httpStatus');
+const accessTokenTypes = require('../helpers/accessTokenTypes');
 const logs = require('../helpers/logs');
 const jwt = require('jsonwebtoken');
 const secret = process.env.JWT_SECRET || 'devmode';
@@ -34,7 +35,7 @@ class Auth {
             {
               userId: user._id,
               token: token,
-              type: 'auth',
+              type: accessTokenTypes.AUTH,
               location: 'Update this',
               ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
             },
@@ -91,7 +92,7 @@ class Auth {
       const AccessTokenUser = await AccessTokenModel.findOne({
         userId: user._id,
         token: token,
-        type: 'new_user',
+        type: accessTokenTypes.VERIFY_EMAIL,
         status: true
       });
 
@@ -116,7 +117,7 @@ class Auth {
               userId: user._id,
               token: token,
               status: true,
-              type: 'new_user'
+              type: accessTokenTypes.VERIFY_EMAIL
             },
             {
               status: false,
@@ -182,7 +183,7 @@ class Auth {
       await AccessTokenModel.create({
         userId: user._id,
         token: token,
-        type: 'reset',
+        type: accessTokenTypes.RESET,
         location: 'Update this',
         ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
       });

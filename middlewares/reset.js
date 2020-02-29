@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const UserModel = mongoose.model('User');
 const AccessTokenModel = mongoose.model('AccessToken');
 const httpStatus = require('../helpers/httpStatus');
+const accessTokenTypes = require('../helpers/accessTokenTypes');
 const logs = require('../helpers/logs');
 
 const auth = async (req, res, next) => {
@@ -19,7 +20,10 @@ const auth = async (req, res, next) => {
       const AccessTokenUser = await AccessTokenModel.findOne({
         userId: user._id,
         token: token,
-        $or: [{ type: 'reset' }, { type: 'auth' }],
+        $or: [
+          { type: accessTokenTypes.RESET },
+          { type: accessTokenTypes.AUTH }
+        ],
         status: true
       });
 
