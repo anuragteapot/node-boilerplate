@@ -12,7 +12,9 @@ const auth = async (req, res, next) => {
       message: 'UNAUTHORIZED'
     });
   }
+
   let token = req.headers.authorization;
+
   try {
     let user = await UserModel.findByToken(token);
 
@@ -27,7 +29,7 @@ const auth = async (req, res, next) => {
         status: true
       });
 
-      if (AccessTokenUser && AccessTokenUser._id) {
+      if (AccessTokenUser) {
         req.user = user.toJSON();
         req.accessToken = AccessTokenUser.toJSON();
         next();
