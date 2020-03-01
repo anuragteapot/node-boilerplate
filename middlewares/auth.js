@@ -9,10 +9,12 @@ const auth = async (req, res, next) => {
   if (!req.headers.authorization) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       status: httpStatus.UNAUTHORIZED,
-      message: 'Not authorized'
+      message: 'UNAUTHORIZED'
     });
   }
+
   let token = req.headers.authorization;
+
   try {
     let user = await UserModel.findByToken(token);
 
@@ -24,27 +26,27 @@ const auth = async (req, res, next) => {
         status: true
       });
 
-      if (AccessTokenUser && AccessTokenUser._id) {
+      if (AccessTokenUser) {
         req.user = user.toJSON();
         req.accessToken = AccessTokenUser.toJSON();
         next();
       } else {
         return res.status(httpStatus.UNAUTHORIZED).json({
           status: httpStatus.UNAUTHORIZED,
-          message: 'Not authorized'
+          message: 'UNAUTHORIZED'
         });
       }
     } else {
       return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
-        message: 'Not authorized'
+        message: 'UNAUTHORIZED'
       });
     }
   } catch (e) {
     logs(`Error [${e}]`);
     return res.status(httpStatus.UNAUTHORIZED).json({
       status: httpStatus.UNAUTHORIZED,
-      message: 'Not authorized'
+      message: 'UNAUTHORIZED'
     });
   }
 };

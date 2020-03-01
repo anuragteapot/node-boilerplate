@@ -14,11 +14,13 @@ class Auth {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
     }
+
     try {
       let user = await UserModel.findByCredentials(
         req.body.email,
         req.body.password
       );
+
       if (user && user._id && user.emailVerified === true) {
         let token = jwt.sign(
           {
@@ -30,52 +32,28 @@ class Auth {
           secret
         );
 
-        try {
-          AccessTokenModel.create(
-            {
-              userId: user._id,
-              token: token,
-              type: accessTokenTypes.AUTH,
-              location: 'Update this',
-              ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
-            },
-            (err, created) => {
-              if (err) {
-                logs(
-                  `Error on user login [${user.email}]. Error: ..:: ${err.message} ::..`,
-                  'error'
-                );
-                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                  status: httpStatus.INTERNAL_SERVER_ERROR,
-                  error: err.message
-                });
-              }
-              logs(`Logged user [${user.email}]`);
-              res.status(httpStatus.OK).json({ token });
-            }
-          );
-        } catch (e) {
-          logs(
-            `Error on user login [${user.email}]. Error: ..:: ${e.message} ::..`,
-            'error'
-          );
-          res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: httpStatus.INTERNAL_SERVER_ERROR,
-            error: e.message
-          });
-        }
+        await AccessTokenModel.create({
+          userId: user._id,
+          token: token,
+          type: accessTokenTypes.AUTH,
+          location: 'Update this',
+          ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
+        });
+
+        logs(`Logged user [${user.email}]`);
+        return res.status(httpStatus.OK).json({ token });
       } else {
         logs(`Error on login [ Email not verified ${user.email} ]`);
-        res.status(httpStatus.UNAUTHORIZED).json({
+        return res.status(httpStatus.UNAUTHORIZED).json({
           message: 'Email not verified.',
           status: httpStatus.UNAUTHORIZED
         });
       }
     } catch (e) {
-      logs(`Error on login [${e.message}]`);
-      res.status(httpStatus.UNAUTHORIZED).json({
-        message: e.message,
-        status: httpStatus.UNAUTHORIZED
+      logs(`Error on login [${e}]`);
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'INTERNAL_SERVER_ERROR',
+        status: httpStatus.INTERNAL_SERVER_ERROR
       });
     }
   }
@@ -84,9 +62,16 @@ class Auth {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send();
     }
-    const { token } = { ...req.body };
 
+    if (!req.headers.authorization) {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: 'UNAUTHORIZED'
+      });
+    }
     try {
+      let token = req.headers.authorization;
+
       let user = await UserModel.findByToken(token);
 
       const AccessTokenUser = await AccessTokenModel.findOne({
@@ -104,48 +89,41 @@ class Auth {
           });
         }
 
-        try {
-          await UserModel.updateOne(
-            { _id: user._id },
-            {
-              emailVerified: true
-            }
-          );
+        await UserModel.updateOne(
+          { _id: user._id },
+          {
+            emailVerified: true
+          }
+        );
 
-          await AccessTokenModel.updateOne(
-            {
-              userId: user._id,
-              token: token,
-              status: true,
-              type: accessTokenTypes.VERIFY_EMAIL
-            },
-            {
-              status: false,
-              token: 'null'
-            }
-          );
+        await AccessTokenModel.updateOne(
+          {
+            userId: user._id,
+            token: token,
+            status: true,
+            type: accessTokenTypes.VERIFY_EMAIL
+          },
+          {
+            status: false,
+            token: 'null'
+          }
+        );
 
-          return res.status(httpStatus.OK).json({
-            status: httpStatus.OK,
-            message: 'Your account verified'
-          });
-        } catch (e) {
-          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: httpStatus.INTERNAL_SERVER_ERROR,
-            message: 'INTERNAL_SERVER_ERROR'
-          });
-        }
+        return res.status(httpStatus.OK).json({
+          status: httpStatus.OK,
+          message: 'Your account verified'
+        });
       } else {
         return res.status(httpStatus.UNAUTHORIZED).json({
           status: httpStatus.UNAUTHORIZED,
-          message: 'Not authorized'
+          message: 'UNAUTHORIZED'
         });
       }
     } catch (e) {
       logs(`Error [${e}]`);
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        status: httpStatus.UNAUTHORIZED,
-        message: 'Not authorized'
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: 'INTERNAL_SERVER_ERROR'
       });
     }
   }
@@ -205,7 +183,7 @@ class Auth {
       );
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
-        error: 'Please try again later.'
+        error: 'INTERNAL_SERVER_ERROR'
       });
     }
   }
@@ -218,12 +196,13 @@ class Auth {
     if (!req.headers.authorization) {
       return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
-        message: 'Not authorized'
+        message: 'UNAUTHORIZED'
       });
     }
-    let token = req.headers.authorization;
 
     try {
+      let token = req.headers.authorization;
+
       let user = await UserModel.findByToken(token);
 
       if (user) {
@@ -253,14 +232,14 @@ class Auth {
       } else {
         return res.status(httpStatus.UNAUTHORIZED).json({
           status: httpStatus.UNAUTHORIZED,
-          message: 'Not authorized'
+          message: 'UNAUTHORIZED'
         });
       }
     } catch (e) {
       logs(`Error [${e}]`);
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        status: httpStatus.UNAUTHORIZED,
-        message: 'Not authorized'
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        message: 'INTERNAL_SERVER_ERROR'
       });
     }
   }
