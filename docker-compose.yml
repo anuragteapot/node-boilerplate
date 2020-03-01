@@ -7,11 +7,6 @@ services:
     ports:
       - '3000:3000'
     container_name: 'api'
-    environment:
-      NODE_ENV: ${NODE_ENV}
-      PORT: ${PORT}
-      JWT_SECRET: ${JWT_SECRET}
-      MONGO_URI: ${MONGO_URI}
     depends_on:
       - mongo
       - redis
