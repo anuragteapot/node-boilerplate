@@ -50,10 +50,10 @@ class Auth {
         });
       }
     } catch (e) {
-      logs(`Error on login [${e}]`);
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        message: 'INTERNAL_SERVER_ERROR',
-        status: httpStatus.INTERNAL_SERVER_ERROR
+      logs(`Error on login [${e.message}]`);
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        message: 'UNAUTHORIZED',
+        status: httpStatus.UNAUTHORIZED
       });
     }
   }
@@ -69,6 +69,7 @@ class Auth {
         message: 'UNAUTHORIZED'
       });
     }
+
     try {
       let token = req.headers.authorization;
 
@@ -121,9 +122,9 @@ class Auth {
       }
     } catch (e) {
       logs(`Error [${e}]`);
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        message: 'INTERNAL_SERVER_ERROR'
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: 'UNAUTHORIZED'
       });
     }
   }
@@ -181,9 +182,9 @@ class Auth {
         `Error on find user [${email}]. Error: ..:: ${e.message} ::..`,
         'error'
       );
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        error: 'INTERNAL_SERVER_ERROR'
+      res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        error: 'UNAUTHORIZED'
       });
     }
   }
@@ -237,9 +238,9 @@ class Auth {
       }
     } catch (e) {
       logs(`Error [${e}]`);
-      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        status: httpStatus.INTERNAL_SERVER_ERROR,
-        message: 'INTERNAL_SERVER_ERROR'
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        status: httpStatus.UNAUTHORIZED,
+        message: 'UNAUTHORIZED'
       });
     }
   }

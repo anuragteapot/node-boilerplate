@@ -42,7 +42,7 @@ app.use('*', (req, res) => {
 const listen = () => {
   logs(`Database connected at ${connectionURI}`);
   app.listen(PORT, () => {
-    logs(`App listen on port ${PORT}`);
+    console.log(`App listen on port ${PORT}`);
   });
 };
 
