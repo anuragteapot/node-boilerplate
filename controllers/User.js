@@ -8,6 +8,8 @@ const httpStatus = require('../helpers/httpStatus');
 const accessTokenTypes = require('../helpers/accessTokenTypes');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs');
 const secret = process.env.JWT_SECRET || 'devmode';
 
 class User {
@@ -46,10 +48,17 @@ class User {
       });
 
       try {
+        const template = await fs.readFileSync(
+          path.resolve(__dirname, '../mail/templates/verifyEmail.html'),
+          'utf8'
+        );
+
+        const url = `${process.env.SITE_BASE_URL}/verify-email?token=${token}`;
+
         await sendEmail({
           to: user.email,
           subject: 'Please Verify Email',
-          template: `<h1>${token}</h1>`
+          template: template.replace('$link', url)
         });
 
         res.status(httpStatus.CREATED).json({
@@ -89,7 +98,7 @@ class User {
         name: newData.name || userData.name,
         age: newData.age || userData.age
       };
-      
+
       if (newData.password) {
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(newData.password, salt);

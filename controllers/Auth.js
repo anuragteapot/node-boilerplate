@@ -7,6 +7,8 @@ const httpStatus = require('../helpers/httpStatus');
 const accessTokenTypes = require('../helpers/accessTokenTypes');
 const logs = require('../helpers/logs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const fs = require('fs');
 const secret = process.env.JWT_SECRET || 'devmode';
 
 class Auth {
@@ -167,10 +169,17 @@ class Auth {
         ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
       });
 
+      const template = await fs.readFileSync(
+        path.resolve(__dirname, '../mail/templates/reset.html'),
+        'utf8'
+      );
+
+      const url = `${process.env.SITE_BASE_URL}/forget-password?token=${token}`;
+
       await sendEmail({
         to: user.email,
         subject: 'Reset link to your password.',
-        template: `<h1>${token}</h1>`
+        template: template.replace('$link', url)
       });
 
       return res.status(httpStatus.CREATED).json({
