@@ -2,13 +2,6 @@ const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
-// const fs = require('fs');
-// const path = require('path');
-// const _ = require('underscore');
-// const lodash = require('lodash');
-// const time = require('time');
-// const moment = require('moment');
-// const cookie = require('cookie');
 const Promise = require('bluebird');
 const url = require('url');
 const randomstring = require('randomstring');
@@ -37,14 +30,6 @@ module.exports = {
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
     return decrypted.toString();
-  },
-
-  disableRemoteMethods(Model, moreDisabled = []) {
-    let toBeDisabled = ['deleteById', 'destroyById', 'deleteAll', 'destroyAll'];
-    toBeDisabled = moreDisabled.concat(toBeDisabled);
-    toBeDisabled.forEach(methodName => {
-      Model.disableRemoteMethod(methodName, true);
-    });
   },
 
   getHostUrlFromReq(req, includePath) {
