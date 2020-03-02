@@ -29,6 +29,10 @@ staticPath.forEach(path => {
   }
 });
 
+app.use('/ping', (req, res) => {
+  res.status(200).send('<h1 style="text-align:center;">👻 Fred Foo 👻</h1>');
+});
+
 const routes = require('../routes');
 Object.keys(routes).forEach(routeName => {
   logs(`Loaded route: ${routeName}`);
@@ -36,7 +40,9 @@ Object.keys(routes).forEach(routeName => {
 });
 
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found', status: 404 });
+  res
+    .status(404)
+    .send('<h1 style="text-align:center;">🤷‍♂️ 👻 Route not found 👻 🤷‍♂️</h1>');
 });
 
 const listen = () => {

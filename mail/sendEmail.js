@@ -12,7 +12,7 @@ const sendEmail = ({ to, from, template, subject }) => {
 
     smtp.sendMail(options, (err, response) => {
       if (err) {
-        logs(`Error on send message: ${err}`);
+        logs(`Error on send message: Error: ..:: ${err} ..::`);
         reject(err);
       } else {
         logs(`Message sent.`);
