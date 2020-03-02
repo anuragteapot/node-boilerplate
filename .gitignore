@@ -3,3 +3,4 @@ log.txt
 /node_modules
 uploads
 mongodb
+redis
