@@ -123,7 +123,7 @@ class Auth {
         });
       }
     } catch (e) {
-      logs(`Error [${e}]`);
+      logs(`Error on verifyEmail. Error: ..:: [${e}] ::..`);
       return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
         message: 'UNAUTHORIZED'
@@ -142,8 +142,7 @@ class Auth {
 
       if (!user) {
         logs(
-          `Error user with [${email}]. Error: ..:: User not found with this email. ::..`,
-          'error'
+          `Error user with [${email}]. Error: ..:: User not found with this email. ::..`
         );
         return res.status(httpStatus.NON_AUTHORITATIVE_INFORMATION).json({
           status: httpStatus.NON_AUTHORITATIVE_INFORMATION,
@@ -187,11 +186,8 @@ class Auth {
         message: 'Reset link send'
       });
     } catch (e) {
-      logs(
-        `Error on find user [${email}]. Error: ..:: ${e.message} ::..`,
-        'error'
-      );
-      res.status(httpStatus.UNAUTHORIZED).json({
+      logs(`Error on find user [${email}]. Error: ..:: ${e.message || e} ::..`);
+      return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
         error: 'UNAUTHORIZED'
       });
@@ -246,7 +242,7 @@ class Auth {
         });
       }
     } catch (e) {
-      logs(`Error [${e}]`);
+      logs(`Error on logout. Error ..:: [${e.message || e}] ::..`);
       return res.status(httpStatus.UNAUTHORIZED).json({
         status: httpStatus.UNAUTHORIZED,
         message: 'UNAUTHORIZED'

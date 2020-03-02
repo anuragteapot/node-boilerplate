@@ -27,8 +27,6 @@ class User {
     try {
       const created = await UserModel.create(user);
 
-      logs(`Created user [${created._id}]`);
-
       let token = jwt.sign(
         {
           _id: created._id,
@@ -47,43 +45,34 @@ class User {
         ip: req.connection.remoteAddress || req.headers['x-forwarded-for']
       });
 
-      try {
-        const template = await fs.readFileSync(
-          path.resolve(__dirname, '../mail/templates/verifyEmail.html'),
-          'utf8'
-        );
+      const template = await fs.readFileSync(
+        path.resolve(__dirname, '../mail/templates/verifyEmail.html'),
+        'utf8'
+      );
 
-        const url = `${process.env.SITE_BASE_URL}/verify-email?token=${token}`;
+      const url = `${process.env.SITE_BASE_URL}/verify-email?token=${token}`;
 
-        await sendEmail({
-          to: user.email,
-          subject: 'Please Verify Email',
-          template: template.replace('$link', url)
-        });
+      await sendEmail({
+        to: user.email,
+        subject: 'Please Verify Email',
+        template: template.replace('$link', url)
+      });
 
-        res.status(httpStatus.CREATED).json({
-          status: httpStatus.CREATED,
-          message:
-            'Your account has been successfully created. Please verify your email.'
-        });
-      } catch (err) {
-        logs(
-          `Error on create user [${user.email}]. Error: ..:: ${err} ::..`,
-          'error'
-        );
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-          status: httpStatus.INTERNAL_SERVER_ERROR,
-          error: 'Please try again.'
-        });
-      }
+      return res.status(httpStatus.CREATED).json({
+        status: httpStatus.CREATED,
+        message:
+          'Your account has been successfully created. Please verify your email.'
+      });
     } catch (e) {
       logs(
-        `Error on create user [${user.email}]. Error: ..:: ${e.message} ::..`,
+        `Error on create user [${user.email}]. Error: ..:: ${e.message ||
+          e} ::..`,
         'error'
       );
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
-        error: e.message
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error'
       });
     }
   }
@@ -106,48 +95,40 @@ class User {
       }
 
       updateObj.updated_at = new Date().getTime();
-      UserModel.findByIdAndUpdate(userData._id, updateObj, async function(
-        err,
-        updated
-      ) {
-        if (err) {
-          logs(
-            `Error on findAndupdate user [${userData.email}]. Error: ..:: ${err} ::..`,
-            'error'
-          );
-          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            status: httpStatus.INTERNAL_SERVER_ERROR,
-            error: err
-          });
-        }
 
-        if (accessTokenData.type === accessTokenTypes.RESET) {
-          await AccessTokenModel.updateOne(
-            {
-              userId: updated._id,
-              token: accessTokenData.token,
-              status: true,
-              type: accessTokenTypes.RESET
-            },
-            {
-              status: false,
-              token: 'null'
-            }
-          );
-        }
+      const updated = await UserModel.findByIdAndUpdate(
+        userData._id,
+        updateObj
+      );
 
-        UserModel.findById(updated._id, (err, user) => {
-          return res.json(user);
-        });
-      });
+      if (accessTokenData.type === accessTokenTypes.RESET) {
+        await AccessTokenModel.updateOne(
+          {
+            userId: updated._id,
+            token: accessTokenData.token,
+            status: true,
+            type: accessTokenTypes.RESET
+          },
+          {
+            status: false,
+            token: 'null'
+          }
+        );
+      }
+
+      const user = await UserModel.findById(updated._id);
+
+      return res.json(user);
     } catch (e) {
       logs(
-        `Error on update user [${userData.email}]. Error: ..:: ${e.message} ::..`,
+        `Error on update user [${userData.email}]. Error: ..:: ${e.message ||
+          e} ::..`,
         'error'
       );
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
         status: httpStatus.INTERNAL_SERVER_ERROR,
-        error: e.message
+        error: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error'
       });
     }
   }
