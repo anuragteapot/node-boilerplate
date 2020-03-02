@@ -4,4 +4,4 @@ COPY . /opt
 WORKDIR /opt
 RUN npm install --production --silent
 
-CMD ["npm", "start:server"]
+CMD ["npm", "run", "start"]
