@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Guid = require('guid');
+const accessTokenTypes = require('../helpers/accessTokenTypes');
 const { Schema } = mongoose;
 
 const AccessTokenSchema = new Schema({
@@ -23,7 +24,7 @@ const AccessTokenSchema = new Schema({
   type: {
     type: String,
     required: true,
-    default: 'auth'
+    default: accessTokenTypes.AUTH
   },
   location: {
     type: String,
