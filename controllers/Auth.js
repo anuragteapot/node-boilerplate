@@ -144,8 +144,8 @@ class Auth {
         logs(
           `Error user with [${email}]. Error: ..:: User not found with this email. ::..`
         );
-        return res.status(httpStatus.NON_AUTHORITATIVE_INFORMATION).json({
-          status: httpStatus.NON_AUTHORITATIVE_INFORMATION,
+        return res.status(httpStatus.NOT_FOUND).json({
+          status: httpStatus.NOT_FOUND,
           error: 'User not found with this email.'
         });
       }
