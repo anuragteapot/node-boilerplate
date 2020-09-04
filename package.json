@@ -25,7 +25,7 @@
     "guid": "0.0.12",
     "helmet": "^3.12.0",
     "jsonwebtoken": "^8.2.1",
-    "markdown-to-jsx": "^6.10.3",
+    "markdown-to-jsx": "^6.11.4",
     "md5": "^2.2.1",
     "moment": "^2.22.0",
     "mongoose": "^5.0.14",
